@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from . import config as cfg
+from typing import Literal
 
 """
 Feature engineering, organised around the RFM framework.
@@ -25,8 +26,9 @@ _WINDOW_DAYS = (pd.Timestamp(cfg.SNAPSHOT_DATE) - pd.Timestamp(cfg.OBSERVATION_S
 # Function that protects against division by zero
 def _safe_div(a: pd.Series, b: pd.Series) -> pd.Series:
     """Element base division that returns 0 where the denominator is 0."""
+
     result = (a / b.replace(0, np.nan)).fillna(0.0)
-    
+
     return result
 
 # Function to create new features
@@ -99,21 +101,71 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def build_feature_matrix(df: pd.DataFrame):
+# def build_feature_matrix(df: pd.DataFrame):
+#     """
+#         - Return (X, y) ready for modelling.
+#         - Drops the target, id, raw dates and all leakage columns.
+#     """
+
+#     df = add_features(df)
+
+#     y = df[cfg.TARGET].astype(int)
+
+#     drop_cols = ([cfg.TARGET, cfg.ID_COL] + cfg.DROP_AFTER_FEATURES + list(cfg.LEAKAGE_COLS.keys()))
+
+#     # Some leakage/date names may already be gone; ignore missing.
+#     X = df.drop(columns=[c for c in drop_cols if c in df.columns])
+
+#     # Guard rail: nothing nonnumeric should survive into the matrix.
+#     non_numeric = X.select_dtypes(exclude="number").columns.tolist()
+#     if non_numeric:
+#         raise ValueError(f"Non-numeric columns leaked into X: {non_numeric}")
+
+#     return X, y
+
+FeatureSet = Literal["raw", "engineered", "all"]
+
+def build_feature_matrix(df: pd.DataFrame, feature_set: FeatureSet = "all"):
     """
-        - Return (X, y) ready for modelling.
-        - Drops the target, id, raw dates and all leakage columns.
+    Return (X, y) ready for modelling.
+
+    feature_set:
+      - "raw" : cleaned raw columns only
+      - "engineered" : engineered columns only
+      - "all" : raw + engineered columns
     """
-    df = add_features(df)
 
-    y = df[cfg.TARGET].astype(int)
+    if feature_set not in {"raw", "engineered", "all"}:
+        raise ValueError(f"Unknown feature_set='{feature_set}'. Use 'raw', 'engineered', or 'all'.")
 
-    drop_cols = ([cfg.TARGET, cfg.ID_COL] + cfg.DROP_AFTER_FEATURES + list(cfg.LEAKAGE_COLS.keys()))
+    base = df.copy()
+    y = base[cfg.TARGET].astype(int)
 
-    # Some leakage/date names may already be gone; ignore missing.
-    X = df.drop(columns=[c for c in drop_cols if c in df.columns])
+    drop_cols = (
+        [cfg.TARGET, cfg.ID_COL]
+        + cfg.DROP_AFTER_FEATURES
+        + list(cfg.LEAKAGE_COLS.keys())
+    )
 
-    # Guard rail: nothing nonnumeric should survive into the matrix.
+    if feature_set == "raw":
+        X = base.drop(columns=[c for c in drop_cols if c in base.columns])
+
+    else:
+        feat = add_features(base)
+
+        if feature_set == "all":
+            X = feat.drop(columns=[c for c in drop_cols if c in feat.columns])
+
+        else:
+            # engineered only
+            engineered_cols = [c for c in feat.columns if c not in base.columns]
+
+            # Defensive filter in case any future engineered names collide with protected columns
+            forbidden = set(drop_cols)
+            engineered_cols = [c for c in engineered_cols if c not in forbidden]
+
+            X = feat[engineered_cols]
+
     non_numeric = X.select_dtypes(exclude="number").columns.tolist()
     if non_numeric:
         raise ValueError(f"Non-numeric columns leaked into X: {non_numeric}")

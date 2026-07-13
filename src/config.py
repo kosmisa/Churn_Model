@@ -31,6 +31,24 @@ DATE_COLS = [
     "first_live_bet_date",
 ]
 
+
+UNITS = {
+    "total_turnover": "EUR",
+    "total_payout": "EUR",
+    "total_deposit_amount": "EUR",
+    "ggr": "EUR",
+    "avg_bet_amount": "EUR",
+    "net_cash_flow": "EUR",
+    "days_since_last_bet": "days",
+    "tenure_days": "days",
+    "days_active_in_observation": "days",
+    "live_bets_count": "count",
+    "deposit_count": "count",
+    "bet_day_rate": "rate (0-1)",
+    "ggr_margin": "ratio",
+    "deposit_to_turnover_ratio": "ratio",
+    }
+
 # Columns that I WILL NOT use as model features.
 LEAKAGE_COLS = {
     # Defines the target itself -> I will be using it as a look into the future.

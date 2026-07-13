@@ -23,16 +23,11 @@ So beyond just ROC-AUC report i use:
 """
 
 def threshold_free_metrics(y_true, y_prob) -> dict:
-    """
-    Metrics that do not depend on a decision threshold.
-    1. ROC-AUC: Area under the Receiver Operating Characteristic curve.
-    2. PR-AUC: Area under the Precision-Recall curve.
-    3. Brier score: Mean squared error of the predicted probabilities. For this the lower it is the better.
-    """
+    """Metrics that do not depend on a decision threshold."""
     metrics = { 
         "roc_auc": roc_auc_score(y_true, y_prob),
         "pr_auc": average_precision_score(y_true, y_prob),
-        "brier": brier_score_loss(y_true, y_prob),
+        "brier": brier_score_loss(y_true, y_prob),  # lower = better calibrated
     }
 
     return metrics
@@ -77,6 +72,7 @@ def topk_report(y_true, y_prob, ks=(0.05, 0.10, 0.20)) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
 
 def cv_stability(scores: dict[str, list]) -> pd.DataFrame:
     """Summarise per fold scores as mean +/- std to demonstrate stability."""
