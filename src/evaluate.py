@@ -78,7 +78,6 @@ def topk_report(y_true, y_prob, ks=(0.05, 0.10, 0.20)) -> pd.DataFrame:
         )
     return pd.DataFrame(rows)
 
-
 def cv_stability(scores: dict[str, list]) -> pd.DataFrame:
     """Summarise per fold scores as mean +/- std to demonstrate stability."""
     df = pd.DataFrame({
