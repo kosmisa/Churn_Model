@@ -1,0 +1,14 @@
+# Data
+Data/
+
+# Notebooks
+RND/Workbook.ipynb
+notes/*
+
+# Scripts
+src/__pycache__/
+
+# envs
+.env
+
+chrun_venv
