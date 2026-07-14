@@ -101,28 +101,6 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-# def build_feature_matrix(df: pd.DataFrame):
-#     """
-#         - Return (X, y) ready for modelling.
-#         - Drops the target, id, raw dates and all leakage columns.
-#     """
-
-#     df = add_features(df)
-
-#     y = df[cfg.TARGET].astype(int)
-
-#     drop_cols = ([cfg.TARGET, cfg.ID_COL] + cfg.DROP_AFTER_FEATURES + list(cfg.LEAKAGE_COLS.keys()))
-
-#     # Some leakage/date names may already be gone; ignore missing.
-#     X = df.drop(columns=[c for c in drop_cols if c in df.columns])
-
-#     # Guard rail: nothing nonnumeric should survive into the matrix.
-#     non_numeric = X.select_dtypes(exclude="number").columns.tolist()
-#     if non_numeric:
-#         raise ValueError(f"Non-numeric columns leaked into X: {non_numeric}")
-
-#     return X, y
-
 FeatureSet = Literal["raw", "engineered", "all"]
 
 def build_feature_matrix(df: pd.DataFrame, feature_set: FeatureSet = "all"):
