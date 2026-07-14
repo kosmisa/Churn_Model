@@ -1,5 +1,7 @@
 # Data
-Data/
+Data/*
+!Data/Diagrams/
+!Data/Diagrams/**
 
 # Notebooks
 RND/Workbook.ipynb
